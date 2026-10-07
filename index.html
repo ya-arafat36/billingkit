@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Invoice Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Playfair+Display:wght@600;800&family=Hind+Siliguri:wght@400;600&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef1ee;--panel:#fff;--ink:#16211b;--mute:#5d6b63;--line:#d5ddd7;--accent:#0f6b4f;--accent-ink:#fff;--danger:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1511;--panel:#16201a;--ink:#e8efe9;--mute:#9aaba0;--line:#2a3830;--danger:#f2877f}}
+:root[data-theme="dark"]{--bg:#0e1511;--panel:#16201a;--ink:#e8efe9;--mute:#9aaba0;--line:#2a3830;--danger:#f2877f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif}
+.tabs{display:flex;gap:6px;padding:10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+.tabs button{flex:1;padding:11px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;font:inherit;font-weight:600}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{max-width:1180px;margin:0 auto;padding:0 10px 90px;display:grid;gap:14px}
+@media(min-width:900px){.tabs,.fab{display:none!important}main{grid-template-columns:420px 1fr;align-items:start;padding-top:14px}#edit,#view{display:block!important}#view{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow:auto}}
+details.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:0 14px;margin-bottom:10px}
+summary{font-weight:700;padding:13px 0;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"＋";float:right;color:var(--accent)}
+details[open]>summary::after{content:"－"}
+details[open]{padding-bottom:14px}
+label{display:block;font-size:13px;color:var(--mute);margin:9px 0 3px}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=color]{height:44px;padding:3px}input[type=range]{padding:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+.btn{padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600}
+.btn.p{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.d{color:var(--danger)}.btn.s{padding:7px 10px;font-size:13px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.sw{display:flex;gap:9px;margin-top:8px}.sw button{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);padding:0}
+.st{font-size:12px;color:var(--mute);margin-left:6px}
+.hist{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:8px 0;font-size:14px}
+.fab{position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:6;padding:14px 18px;border-radius:30px;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#view{display:none}
+#fitbox{width:100%;position:relative}
+.paper{width:794px;transform-origin:0 0;background:#fff;color:#16211b;border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.15);position:absolute;left:0;top:0}
+.in{padding:40px;position:relative;overflow:hidden;font-size:14px;line-height:1.5;min-height:1123px;display:flex;flex-direction:column}
+.in>*{position:relative;z-index:1}
+.in>.wm{position:absolute;z-index:0;left:50%;top:50%;transform:translate(-50%,-50%) rotate(var(--wr));font-weight:800;white-space:nowrap;color:var(--sa);opacity:var(--wo);pointer-events:none;user-select:none;line-height:1}
+.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:3px solid var(--sa);padding-bottom:16px}
+.top.rev{flex-direction:row-reverse}.top.rev .meta{text-align:left}
+.brand img{display:block;margin-bottom:8px}
+.brand b{font-size:18px}
+.meta{text-align:right}.meta h1{margin:0 0 4px;font-size:30px;letter-spacing:.5px;line-height:1.1}
+.chip{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--sa) 16%,#fff);color:var(--sa)}
+.parties{margin:20px 0}
+.lbl{font-size:12px;color:#6a766f;margin-bottom:2px}
+.pre{white-space:pre-line}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;background:color-mix(in srgb,var(--sa) 10%,#fff);padding:9px 8px;font-size:13px}
+td{padding:9px 8px;border-bottom:1px solid #e1e7e3;vertical-align:top}
+.r{text-align:right}
+.tot{margin:16px 0 0 auto;width:290px}
+.tot div{display:flex;justify-content:space-between;padding:4px 0}
+.tot .g{border-top:2px solid var(--sa);margin-top:4px;padding-top:8px;font-weight:700;font-size:17px}
+.tot .bal{background:var(--sa);color:var(--sf);padding:9px 12px;border-radius:8px;font-weight:800;margin-top:8px}
+.words{margin-top:12px;font-size:13px;color:#46524b;font-style:italic}
+.foot{display:grid;grid-template-columns:1fr 230px;gap:24px;margin-top:auto;padding-top:26px;font-size:13px;align-items:end}
+.foot img.qr{width:92px;height:92px;object-fit:contain;display:block;margin-top:8px}
+.sig{text-align:center}.sig img{max-height:60px;max-width:200px;display:block;margin:0 auto 2px}
+.sig .ln{border-top:1px solid #16211b;padding-top:4px;min-height:24px}
+.t-gradient .top{background:linear-gradient(135deg,var(--sa),color-mix(in srgb,var(--sa) 55%,#000));color:var(--sf);padding:22px;border-radius:14px;border:0}
+.t-gradient .brand img{background:#fff;padding:4px;border-radius:6px}
+.t-gradient .chip{background:#fff;color:var(--sa)}
+.t-gradient th{background:var(--sa);color:var(--sf)}
+.t-sidebar{padding-left:60px;box-shadow:inset 18px 0 0 var(--sa)}
+.t-sidebar h1{color:var(--sa);font-weight:800}
+.t-sidebar .top{border-bottom:1px solid #d5ddd7}
+.t-elegant .top,.t-elegant .top.rev{flex-direction:column;align-items:center;text-align:center;border-bottom:1px solid var(--sa)}
+.t-elegant .meta,.t-elegant .top.rev .meta{text-align:center}
+.t-elegant .brand img{margin:0 auto 8px}
+.t-elegant h1{font-weight:400;letter-spacing:6px;color:var(--sa)}
+.t-elegant th{background:none;border-top:1px solid var(--sa);border-bottom:1px solid var(--sa)}
+.t-bold h1{font-size:46px;font-weight:800;color:var(--sa)}
+.t-bold .top{border-bottom:0;padding-bottom:0}
+.t-bold th{background:var(--sa);color:var(--sf)}
+.t-bold tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--sa) 6%,#fff)}
+.t-bold .tot .g{border-top:0;background:color-mix(in srgb,var(--sa) 12%,#fff);padding:8px 10px;border-radius:6px}
+.t-modern .top{background:var(--sa);color:var(--sf);padding:20px;border-radius:12px;border:0}
+.t-modern .brand img{background:#fff;padding:4px;border-radius:6px}
+.t-modern .chip{background:#fff;color:var(--sa)}
+.t-classic .top{border-bottom:4px double var(--sa)}
+.t-classic h1{letter-spacing:4px;color:var(--sa)}
+.t-classic th{background:none;border-top:2px solid var(--sa);border-bottom:2px solid var(--sa)}
+.t-minimal .top{border-bottom:1px solid #c9d1cc}
+.t-minimal h1{font-weight:400;color:var(--sa)}
+.t-minimal th{background:none;border-bottom:1px solid #16211b}
+.t-minimal .tot .g{border-top:1px solid #16211b}
+
+.nt+.nt{margin-top:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:20px 0}
+.two .parties{margin:0}
+.in.t-panel{padding:0}
+.pn{display:flex;flex:1;align-items:stretch}
+.pn aside{width:255px;flex:none;background:var(--sa);color:var(--sf);padding:34px 24px;display:flex;flex-direction:column;gap:22px}
+.pn aside .lbl{color:inherit;opacity:.7}
+.pn aside .brand img,.pn aside img.qr{background:#fff;padding:5px;border-radius:8px}
+.pn aside .parties{margin:0}
+.pn .mn{flex:1;padding:36px 34px;display:flex;flex-direction:column}
+.pn .meta{text-align:left;margin-bottom:22px}
+.pn h1{font-size:42px;color:var(--sa);font-weight:800}
+.pn .nt{margin-top:18px}
+.pn .tot{width:100%}
+.pn .sig{margin-top:auto;padding-top:34px;width:210px;align-self:flex-end}
+.rc{width:560px;max-width:100%;margin:10px auto 0;border:2px dashed #16211b;padding:26px}
+.rc hr{border:0;border-top:2px dashed #16211b;margin:16px 0}
+.t-receipt .brand,.t-receipt .meta,.t-receipt .nt,.t-receipt .parties,.t-receipt .words{text-align:center}
+.t-receipt .brand img,.t-receipt .qr{margin:8px auto}
+.t-receipt .meta h1{font-size:22px;letter-spacing:2px;color:var(--sa)}
+.t-receipt th{background:none;border-top:2px dashed #16211b;border-bottom:2px dashed #16211b;padding:7px 4px}
+.t-receipt td{border-bottom:1px dashed #9aa5a0;padding:7px 4px}
+.t-receipt .tot{width:100%}
+.t-receipt .tot .g{border-top:2px dashed #16211b}
+.t-receipt .tot .bal{background:none;color:#16211b;border:2px solid #16211b;border-radius:0}
+.ty{text-align:center;font-weight:800;letter-spacing:3px;margin-top:16px}
+.bxt{background:var(--sa);color:var(--sf);text-align:center;font-size:28px;font-weight:800;letter-spacing:6px;padding:12px;border:1px solid #16211b}
+.bxg{display:grid;grid-template-columns:1fr 1fr;margin-top:-1px}
+.bxc{border:1px solid #16211b;padding:12px}
+.bxc.s{margin-top:-1px}
+.bxg>.bxc+.bxc{margin-left:-1px}
+.t-boxed .parties{margin:0}.t-boxed .tot{width:100%;margin:0}.t-boxed .words{margin:0}
+.t-boxed table{margin-top:-1px}.t-boxed th,.t-boxed td{border:1px solid #16211b}
+.t-boxed th{background:var(--sa);color:var(--sf)}
+.t-boxed .tot .bal{border-radius:0}
+.t-hero .top{border-bottom:0;padding-bottom:0}
+.t-hero .meta h1{font-size:15px;letter-spacing:5px;color:#6a766f;font-weight:600}
+.hero{margin:26px 0 6px;padding:26px 28px;border-radius:18px;background:color-mix(in srgb,var(--sa) 10%,#fff)}
+.hero .big{font-size:58px;font-weight:800;color:var(--sa);line-height:1.1}
+.li{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #e1e7e3}
+.li b{font-size:16px}.mu{color:#6a766f;font-size:13px}.la{font-weight:700;font-size:16px;white-space:nowrap}
+.t-dark{--ac:color-mix(in srgb,var(--sa) 60%,#fff);background:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--sa) 42%,transparent),transparent 42%),#13151b;color:#e9ecf3}
+.t-dark .lbl{color:#8a93a6}
+.t-dark h1{font-size:54px;font-weight:800;margin:0;color:var(--ac);line-height:1}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.tile{background:rgba(255,255,255,.06);border:1px solid #2b303c;border-radius:10px;padding:10px 12px}
+.t-dark .brand img{background:#fff;padding:4px;border-radius:6px}
+.t-dark th{background:none;color:var(--ac);border-bottom:2px solid var(--ac)}
+.t-dark td{border-bottom:1px solid #2b303c}
+.t-dark .tot .g{border-top:1px solid #3a4150}
+.t-dark .tot .bal{background:var(--ac);color:#111}
+.t-dark .words,.t-dark .nt .pre{color:#aab2c3}
+.t-dark .sig .ln{border-top-color:#e9ecf3}
+.t-dark .wm{color:var(--ac)}
+.t-vertical .corner{position:absolute;top:0;right:0;background:var(--sa);color:var(--sf);padding:16px 28px;font-weight:800;font-size:16px}
+.vt{display:flex;gap:26px;flex:1;padding-top:30px}
+.rail{writing-mode:vertical-rl;transform:rotate(180deg);font-size:84px;font-weight:800;letter-spacing:8px;line-height:1;color:color-mix(in srgb,var(--sa) 20%,#fff);white-space:nowrap}
+.vt .mn{flex:1;display:flex;flex-direction:column;border-left:3px solid var(--sa);padding-left:26px}
+.t-vertical .meta{text-align:left}
+.t-vertical th{background:none;border-bottom:2px solid var(--sa)}
+.t-vertical .tot .bal{background:none;color:var(--sa);border-top:2px solid var(--sa);border-bottom:2px solid var(--sa);border-radius:0}
+@media print{
+:root{padding:0}
+body{background:#fff}
+.tabs,#edit,.noprint,.fab{display:none!important}
+main{display:block;padding:0;max-width:none}
+#view{display:block!important;position:static;max-height:none;overflow:visible}
+#fitbox{height:auto!important}
+.paper{position:static;transform:none!important;width:100%;box-shadow:none;border-radius:0}
+.in{padding:14mm;min-height:296mm}
+.in.t-sidebar{padding-left:22mm}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4;margin:0}
+}
+</style>
+</head>
+<body>
+<div class="tabs noprint"><button id="t1" class="on">✏️ Edit</button><button id="t2">👁️ Preview</button></div>
+<main>
+<div id="edit">
+<details class="card" open><summary>🏢 তোমার ব্যবসা</summary>
+ <label>নাম</label><input id="fromName" placeholder="Business name">
+ <label>ঠিকানা / ফোন / ইমেইল</label><textarea id="fromInfo" rows="3"></textarea>
+</details>
+<details class="card" open><summary>👤 ক্লায়েন্ট</summary>
+ <label>নাম</label><input id="toName">
+ <label>ঠিকানা / যোগাযোগ</label><textarea id="toInfo" rows="3"></textarea>
+</details>
+<details class="card" open><summary>🧾 Invoice ডিটেইলস</summary>
+ <div class="row"><div><label>Invoice নম্বর</label><input id="no" value="INV-001"></div>
+ <div><label>Currency</label><select id="cur"><option value="৳">৳ BDT</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="£">£ GBP</option><option value="₹">₹ INR</option><option value="">None</option></select></div></div>
+ <div class="row"><div><label>তারিখ</label><input id="date" type="date"></div><div><label>Due date</label><input id="due" type="date"></div></div>
+</details>
+<details class="card" open><summary>📦 আইটেম ও হিসাব</summary>
+ <div id="items"></div>
+ <button class="btn p" id="add" type="button">+ আইটেম যোগ করো</button>
+ <label>Tax এর নাম (VAT / GST)</label><input id="taxName" placeholder="Tax">
+ <div class="row"><div><label>Tax %</label><input id="tax" type="number" inputmode="decimal" min="0" value="0"></div>
+ <div><label>Delivery / Shipping</label><input id="ship" type="number" inputmode="decimal" min="0" value="0"></div></div>
+ <div class="row"><div><label>Discount</label><input id="disc" type="number" inputmode="decimal" min="0" value="0"></div>
+ <div><label>Discount ধরন</label><select id="dtype"><option value="amt">Fixed</option><option value="pct">Percent %</option></select></div></div>
+ <label>Paid / অগ্রিম</label><input id="paid" type="number" inputmode="decimal" min="0" value="0">
+</details>
+<details class="card"><summary>🎨 ডিজাইন ও কালার</summary>
+ <label>টেমপ্লেট</label><select id="tpl"><option value="modern">Modern (কালার হেডার)</option><option value="classic">Classic (সেরিফ)</option><option value="minimal">Minimal</option><option value="gradient">Gradient (গ্রেডিয়েন্ট হেডার)</option><option value="sidebar">Sidebar (পাশে স্ট্রিপ)</option><option value="elegant">Elegant (সেন্টার)</option><option value="bold">Bold (জোরালো টেবিল)</option><option value="panel">Panel (বাম কলামে তথ্য)</option><option value="receipt">Receipt (রসিদ/টিকেট)</option><option value="boxed">Boxed (ফর্মাল বক্স)</option><option value="hero">Hero (বড় টাকার অংক)</option><option value="dark">Dark (নিয়ন ডার্ক)</option><option value="vertical">Editorial (লম্বা টাইটেল)</option></select>
+ <label>থিম কালার (পুরো অ্যাপ + invoice বদলাবে)</label><input id="color" type="color" value="#0f6b4f"><div class="sw" id="sw"></div>
+ <div class="row"><div><label>ফন্ট</label><select id="font"><option value="sans">Modern Sans</option><option value="serif">Elegant Serif</option><option value="bn">Bangla (Hind Siliguri)</option><option value="sys">System</option></select></div>
+ <div><label>Invoice ভাষা</label><select id="lang"><option value="en">English</option><option value="bn">বাংলা</option></select></div></div>
+</details>
+<details class="card"><summary>🖼️ লোগো, সিগনেচার, QR</summary>
+ <label>লোগো<span class="st" id="stLogo"></span></label><input id="fLogo" type="file" accept="image/*"><button class="btn s d" data-rm="logo" type="button" style="margin-top:6px">হটাও</button>
+ <div class="row"><div><label>লোগো সাইজ</label><input id="logoW" type="range" min="40" max="240" value="120"></div>
+ <div><label>লোগো পজিশন</label><select id="logoPos"><option value="left">বামে</option><option value="right">ডানে</option></select></div></div>
+ <label>সিগনেচার<span class="st" id="stSig"></span></label><input id="fSig" type="file" accept="image/*"><button class="btn s d" data-rm="sig" type="button" style="margin-top:6px">হটাও</button>
+ <label>সিগনেচারের নিচের নাম/পদবি</label><input id="signName" placeholder="Authorised Signature">
+ <label>পেমেন্ট QR ছবি<span class="st" id="stQr"></span></label><input id="fQr" type="file" accept="image/*"><button class="btn s d" data-rm="qr" type="button" style="margin-top:6px">হটাও</button>
+</details>
+<details class="card"><summary>💧 Watermark</summary>
+ <label>ধরন</label><select id="wmType"><option value="none">নেই</option><option value="PAID">PAID</option><option value="DRAFT">DRAFT</option><option value="text">নিজের লেখা</option><option value="logo">লোগো</option><option value="auto">অটো (পুরো পেমেন্ট হলে PAID)</option></select>
+ <label>নিজের লেখা</label><input id="wmText" placeholder="যেমন: CONFIDENTIAL">
+ <label>স্বচ্ছতা</label><input id="wmOp" type="range" min="3" max="35" value="10">
+ <label>সাইজ</label><input id="wmSize" type="range" min="20" max="100" value="60">
+ <label>ঘোরানো (degree)</label><input id="wmRot" type="range" min="-60" max="60" value="-28">
+</details>
+<details class="card"><summary>📝 নোট ও পেমেন্ট তথ্য</summary>
+ <label>নোট / শর্তাবলি</label><textarea id="notes" rows="3" placeholder="ধন্যবাদ, terms..."></textarea>
+ <label>Bank / bKash / Nagad তথ্য</label><textarea id="bank" rows="3"></textarea>
+</details>
+<details class="card"><summary>💾 সেভ করা Invoice</summary>
+ <div class="acts"><button class="btn p" id="saveInv" type="button">Save</button><button class="btn" id="newInv" type="button">+ নতুন Invoice</button></div>
+ <div id="hist"></div>
+</details>
+<div class="acts"><button class="btn p" id="print" type="button">PDF / Print</button><button class="btn d" id="reset" type="button">সব Reset</button></div>
+</div>
+<div id="view">
+ <div class="acts noprint"><button class="btn p" id="print2" type="button">PDF / Print</button><button class="btn" id="back" type="button">✏️ Edit</button></div>
+ <div id="fitbox"><div class="paper" id="paper"><div class="in" id="sheet"></div></div></div>
+</div>
+</main>
+<button class="fab noprint" id="fab" type="button">👁️ Preview</button>
+<script>
+(function(){
+var KEY="inv-pro-v2",LK="inv-pro-list",IM={logo:"",sig:"",qr:""},items=[];
+var $=function(i){return document.getElementById(i)};
+var F=["fromName","fromInfo","toName","toInfo","no","cur","date","due","taxName","tax","ship","disc","dtype","paid","tpl","color","font","lang","logoW","logoPos","signName","wmType","wmText","wmOp","wmSize","wmRot","notes","bank"];
+var FONTS={sans:"'Plus Jakarta Sans','Hind Siliguri',system-ui,sans-serif",serif:"'Playfair Display',Georgia,'Hind Siliguri',serif",bn:"'Hind Siliguri','Noto Sans Bengali',sans-serif",sys:"system-ui,sans-serif"};
+var L={en:{inv:"INVOICE",bill:"Bill to",date:"Date",due:"Due",desc:"Description",qty:"Qty",price:"Price",amt:"Amount",sub:"Subtotal",disc:"Discount",tax:"Tax",ship:"Shipping",tot:"Total",paid:"Paid",bal:"Balance due",notes:"Notes",bank:"Payment details",words:"In words",sign:"Authorised Signature",sP:"PAID",sH:"PARTIAL",sU:"UNPAID",amtDue:"Amount due",no:"Invoice no",stat:"Status",thanks:"*** THANK YOU ***"},
+bn:{inv:"ইনভয়েস",bill:"বিল প্রাপক",date:"তারিখ",due:"পরিশোধের তারিখ",desc:"বিবরণ",qty:"পরিমাণ",price:"একক দাম",amt:"মোট",sub:"সাব-টোটাল",disc:"ছাড়",tax:"ট্যাক্স",ship:"ডেলিভারি চার্জ",tot:"সর্বমোট",paid:"পরিশোধিত",bal:"বাকি",notes:"নোট",bank:"পেমেন্ট তথ্য",words:"কথায় (English)",sign:"অনুমোদিত স্বাক্ষর",sP:"পরিশোধিত",sH:"আংশিক",sU:"বাকি",amtDue:"প্রদেয় অর্থ",no:"ইনভয়েস নং",stat:"অবস্থা",thanks:"*** ধন্যবাদ ***"}};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function num(v){var n=parseFloat(v);return isFinite(n)?n:0}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+var MO=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fd(v){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(v||"");return m?m[3]+" "+MO[+m[2]-1]+" "+m[1]:esc(v)}
+function lum(h){var m=/^#([0-9a-f]{6})$/i.exec(h||"");if(!m)return 0;var n=parseInt(m[1],16);return(0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255}
+function money(n){var c=$("cur").value,ind=(c==="৳"||c==="₹");return c+n.toLocaleString(ind?"en-IN":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+var A=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],B=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+function sm(n){if(n<20)return A[n];if(n<100)return B[Math.floor(n/10)]+(n%10?"-"+A[n%10]:"");return A[Math.floor(n/100)]+" Hundred"+(n%100?" "+sm(n%100):"")}
+function big(n,sc){if(n<1000)return sm(n);for(var i=0;i<sc.length;i++){var u=sc[i][0];if(n>=u)return big(Math.floor(n/u),sc)+" "+sc[i][1]+(n%u?" "+big(n%u,sc):"")}return sm(n)}
+function words(t,c){var lk=[[10000000,"Crore"],[100000,"Lakh"],[1000,"Thousand"]],ig=[[1e9,"Billion"],[1e6,"Million"],[1e3,"Thousand"]];
+ var N={"৳":["Taka","Paisa",lk],"₹":["Rupees","Paise",lk],"$":["Dollars","Cents",ig],"€":["Euros","Cents",ig],"£":["Pounds","Pence",ig]}[c]||["","",ig];
+ var w=Math.floor(t+0.0001),p=Math.round((t-w)*100);if(p>=100){w++;p=0}
+ var s=(w?big(w,N[2]):"Zero")+(N[0]?" "+N[0]:"");if(p)s+=" and "+sm(p)+" "+N[1];return s+" Only"}
+function collect(){var o={items:items,IM:IM};F.forEach(function(f){o[f]=$(f).value});return o}
+function apply(o){F.forEach(function(f){if(o[f]!=null)$(f).value=o[f]});items=(o.items&&o.items.length)?o.items:[{d:"",q:1,p:0}];IM={logo:"",sig:"",qr:""};var k;for(k in(o.IM||{}))IM[k]=o.IM[k]}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(collect()))}catch(e){}}
+function load(){try{var r=localStorage.getItem(KEY);if(r)apply(JSON.parse(r))}catch(e){}
+ if(!items.length)items=[{d:"",q:1,p:0}];if(!$("date").value)$("date").value=today()}
+function theme(){var c=$("color").value||"#0f6b4f",ink=lum(c)>0.6?"#111111":"#ffffff",r=document.documentElement.style;
+ r.setProperty("--accent",c);r.setProperty("--accent-ink",ink);return[c,ink]}
+function renderItems(){var h="";items.forEach(function(it,i){
+ h+='<div class="item"><label>বিবরণ</label><input data-i="'+i+'" data-k="d" value="'+esc(it.d)+'"><div class="row"><div><label>পরিমাণ</label><input type="number" inputmode="decimal" min="0" data-i="'+i+'" data-k="q" value="'+esc(it.q)+'"></div><div><label>একক দাম</label><input type="number" inputmode="decimal" min="0" data-i="'+i+'" data-k="p" value="'+esc(it.p)+'"></div></div><button type="button" class="btn s d" style="margin-top:8px" data-del="'+i+'">মুছো</button></div>'});
+ $("items").innerHTML=h}
+function calc(){var sub=0;items.forEach(function(it){sub+=num(it.q)*num(it.p)});
+ var d=$("dtype").value==="pct"?sub*num($("disc").value)/100:num($("disc").value);if(d>sub)d=sub;
+ var tx=(sub-d)*num($("tax").value)/100,sh=num($("ship").value),tot=sub-d+tx+sh,pd=num($("paid").value);
+ return{sub:sub,d:d,tx:tx,sh:sh,tot:tot,pd:pd,due:tot-pd}}
+var MONO="'Courier New',ui-monospace,monospace";
+function wmHtml(c){var t=$("wmType").value,z=num($("wmSize").value);if(t==="auto")t=(c.tot>0&&c.due<=0.004)?"PAID":"none";if(t==="none")return"";
+ if(t==="logo")return IM.logo?'<img class="wm" src="'+IM.logo+'" style="width:'+z+'%" alt="">':"";
+ var x=t==="text"?$("wmText").value.trim():t;if(!x)return"";
+ return'<div class="wm" style="font-size:'+Math.max(30,Math.min(150,720/x.length))*z/60+'px">'+esc(x)+'</div>'}
+function tile(l,v){return'<div class="tile"><div class="lbl">'+l+'</div><b>'+v+'</b></div>'}
+function renderSheet(){var c=calc(),T=L[$("lang").value]||L.en,th=theme(),sh=$("sheet"),tp=$("tpl").value,rows="",li="";
+ sh.className="in t-"+tp;sh.style.fontFamily=(tp==="receipt"?MONO:tp==="vertical"?FONTS.serif:FONTS[$("font").value])||FONTS.sans;
+ sh.style.setProperty("--sa",th[0]);sh.style.setProperty("--sf",th[1]);
+ sh.style.setProperty("--wo",String(num($("wmOp").value)/100));sh.style.setProperty("--wr",num($("wmRot").value)+"deg");
+ items.forEach(function(it,i){var q=num(it.q),p=num(it.p);
+  rows+='<tr><td>'+(i+1)+'</td><td class="pre">'+esc(it.d)+'</td><td class="r">'+esc(q)+'</td><td class="r">'+money(p)+'</td><td class="r">'+money(q*p)+'</td></tr>';
+  li+='<div class="li"><div><b class="pre">'+esc(it.d||"—")+'</b><div class="mu">'+esc(q)+' × '+money(p)+'</div></div><div class="la">'+money(q*p)+'</div></div>'});
+ var st=c.tot>0&&c.due<=0.004?T.sP:(c.pd>0?T.sH:T.sU),rev=$("logoPos").value==="right"?" rev":"",no=esc($("no").value);
+ var brand='<div class="brand">'+(IM.logo?'<img src="'+IM.logo+'" style="width:'+num($("logoW").value)+'px;max-width:100%" alt="">':'')+'<b>'+esc($("fromName").value)+'</b><div class="pre">'+esc($("fromInfo").value)+'</div></div>';
+ var mb='<div># '+no+'</div><div>'+T.date+': '+fd($("date").value)+'</div>'+($("due").value?'<div>'+T.due+': '+fd($("due").value)+'</div>':'')+'<span class="chip">'+st+'</span>';
+ var meta='<div class="meta"><h1>'+T.inv+'</h1>'+mb+'</div>';
+ var bill='<div class="parties"><div class="lbl">'+T.bill+'</div><b>'+esc($("toName").value)+'</b><div class="pre">'+esc($("toInfo").value)+'</div></div>';
+ var tbl='<table><thead><tr><th>#</th><th>'+T.desc+'</th><th class="r">'+T.qty+'</th><th class="r">'+T.price+'</th><th class="r">'+T.amt+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
+ var tn=esc($("taxName").value.trim()||T.tax);
+ var tot='<div class="tot"><div><span>'+T.sub+'</span><span>'+money(c.sub)+'</span></div>'+(c.d?'<div><span>'+T.disc+'</span><span>-'+money(c.d)+'</span></div>':'')+(c.tx?'<div><span>'+tn+' ('+num($("tax").value)+'%)</span><span>'+money(c.tx)+'</span></div>':'')+(c.sh?'<div><span>'+T.ship+'</span><span>'+money(c.sh)+'</span></div>':'')+
+ '<div class="g"><span>'+T.tot+'</span><span>'+money(c.tot)+'</span></div>'+(c.pd?'<div><span>'+T.paid+'</span><span>-'+money(c.pd)+'</span></div>':'')+'<div class="bal"><span>'+T.bal+'</span><span>'+money(Math.max(c.due,0))+'</span></div></div>';
+ var wd=c.tot>0?'<div class="words">'+T.words+': '+esc(words(c.tot,$("cur").value))+'</div>':'';
+ var nt=$("notes").value?'<div class="nt"><div class="lbl">'+T.notes+'</div><div class="pre">'+esc($("notes").value)+'</div></div>':'';
+ var bk=$("bank").value?'<div class="nt"><div class="lbl">'+T.bank+'</div><div class="pre">'+esc($("bank").value)+'</div></div>':'';
+ var qr=IM.qr?'<img class="qr" src="'+IM.qr+'" alt="QR">':'';
+ var sg='<div class="sig">'+(IM.sig?'<img src="'+IM.sig+'" alt="">':'<div style="height:50px"></div>')+'<div class="ln">'+esc($("signName").value||T.sign)+'</div></div>';
+ var foot='<div class="foot"><div>'+nt+bk+qr+'</div>'+sg+'</div>',s;
+ if(tp==="panel")s='<div class="pn"><aside>'+brand+bill+bk+qr+'</aside><div class="mn">'+meta+tbl+tot+wd+nt+sg+'</div></div>';
+ else if(tp==="receipt")s='<div class="rc">'+brand+'<hr><div class="meta"><h1>'+T.inv+'</h1>'+mb+'</div><hr>'+bill+tbl+tot+wd+'<hr>'+nt+bk+qr+sg+'<div class="ty">'+T.thanks+'</div></div>';
+ else if(tp==="boxed")s='<div class="bxt">'+T.inv+'</div><div class="bxg"><div class="bxc">'+brand+'</div><div class="bxc">'+mb+'</div></div><div class="bxc s">'+bill+'</div>'+tbl+'<div class="bxg"><div class="bxc">'+nt+bk+qr+'</div><div class="bxc">'+tot+'</div></div>'+(wd?'<div class="bxc s">'+wd+'</div>':'')+'<div class="bxg"><div class="bxc"></div><div class="bxc">'+sg+'</div></div>';
+ else if(tp==="hero")s='<div class="top'+rev+'">'+brand+meta+'</div><div class="hero"><div class="lbl">'+T.bal+'</div><div class="big">'+money(Math.max(c.due,0))+'</div></div>'+bill+'<div>'+li+'</div>'+tot+wd+foot;
+ else if(tp==="dark")s='<div><h1>'+T.inv+'</h1><div class="tiles">'+tile(T.no,no)+tile(T.date,fd($("date").value))+tile(T.due,$("due").value?fd($("due").value):"—")+tile(T.stat,st)+'</div></div><div class="two">'+brand+bill+'</div>'+tbl+tot+wd+foot;
+ else if(tp==="vertical")s='<div class="corner"># '+no+'</div><div class="vt"><div class="rail">'+T.inv+'</div><div class="mn">'+brand+'<div class="two">'+bill+'<div class="meta">'+mb+'</div></div>'+tbl+tot+wd+foot+'</div></div>';
+ else s='<div class="top'+rev+'">'+brand+meta+'</div>'+bill+tbl+tot+wd+foot;
+ sh.innerHTML=wmHtml(c)+s;fit()}
+function fit(){var b=$("fitbox"),p=$("paper"),w=b.clientWidth;if(!w)return;var sc=Math.min(1,w/794);p.style.transform="scale("+sc+")";b.style.height=Math.ceil(p.offsetHeight*sc)+"px"}
+function status(){$("stLogo").textContent=IM.logo?"✓ আছে":"";$("stSig").textContent=IM.sig?"✓ আছে":"";$("stQr").textContent=IM.qr?"✓ আছে":""}
+function refresh(){renderSheet();status();save()}
+function tab(n){$("edit").style.display=n===1?"block":"none";$("view").style.display=n===2?"block":"none";$("fab").style.display=n===1?"":"none";
+ $("t1").className=n===1?"on":"";$("t2").className=n===2?"on":"";window.scrollTo(0,0);if(n===2)renderSheet()}
+function wide(){if(window.innerWidth>=900){$("edit").style.display="block";$("view").style.display="block"}fit()}
+function doPrint(){renderSheet();try{window.print()}catch(e){alert("Print ব্লক হয়েছে। লিংকটা নতুন ট্যাবে খুলে আবার চেষ্টা করো।")}}
+function img(file,key,max){if(!file)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,max/im.width),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));c.getContext("2d").drawImage(im,0,0,c.width,c.height);IM[key]=c.toDataURL("image/png");refresh()};im.onerror=function(){alert("ছবিটা পড়া যায়নি, অন্য ছবি দাও।")};im.src=r.result};r.readAsDataURL(file)}
+function lst(){try{return JSON.parse(localStorage.getItem(LK)||"[]")}catch(e){return[]}}
+function drawHist(){var l=lst(),h="";l.forEach(function(x,i){h+='<div class="hist"><span>'+esc(x.t)+'</span><span><button class="btn s" data-ld="'+i+'" type="button">Open</button> <button class="btn s d" data-hd="'+i+'" type="button">মুছো</button></span></div>'});$("hist").innerHTML=h||'<div class="st">এখনো কিছু সেভ করা নেই।</div>'}
+function nextNo(v){return v.replace(/(\d+)(?!.*\d)/,function(n){return String(+n+1).padStart(n.length,"0")})}
+load();renderItems();drawHist();refresh();tab(1);wide();
+document.addEventListener("input",function(e){var t=e.target;if(t.dataset&&t.dataset.i!==undefined)items[+t.dataset.i][t.dataset.k]=t.value;refresh()});
+$("items").addEventListener("click",function(e){var d=e.target.getAttribute("data-del");if(d!==null){items.splice(+d,1);if(!items.length)items=[{d:"",q:1,p:0}];renderItems();refresh()}});
+$("add").onclick=function(){items.push({d:"",q:1,p:0});renderItems();refresh()};
+$("fLogo").onchange=function(e){img(e.target.files[0],"logo",500)};$("fSig").onchange=function(e){img(e.target.files[0],"sig",400)};$("fQr").onchange=function(e){img(e.target.files[0],"qr",400)};
+document.addEventListener("click",function(e){var k=e.target.getAttribute&&e.target.getAttribute("data-rm");if(k){IM[k]="";refresh()}
+ var l=e.target.getAttribute&&e.target.getAttribute("data-ld"),h=e.target.getAttribute&&e.target.getAttribute("data-hd");
+ if(l!==null&&l!==undefined){var x=lst()[+l];if(x){apply(x.d);renderItems();refresh()}}
+ if(h!==null&&h!==undefined){var a=lst();a.splice(+h,1);try{localStorage.setItem(LK,JSON.stringify(a))}catch(er){}drawHist()}});
+$("saveInv").onclick=function(){var a=lst(),d=collect(),t=($("no").value||"Invoice")+" · "+($("toName").value||"—"),i=-1;a.forEach(function(x,j){if(x.id===$("no").value)i=j});
+ var rec={id:$("no").value,t:t,d:d};if(i>=0)a[i]=rec;else a.unshift(rec);try{localStorage.setItem(LK,JSON.stringify(a))}catch(er){alert("সেভ হয়নি (জায়গা শেষ)। বড় ছবি কমাও।")}drawHist()};
+$("newInv").onclick=function(){$("no").value=nextNo($("no").value);$("date").value=today();$("due").value="";$("toName").value="";$("toInfo").value="";$("paid").value=0;items=[{d:"",q:1,p:0}];renderItems();refresh();window.scrollTo(0,0)};
+$("t1").onclick=function(){tab(1)};$("t2").onclick=function(){tab(2)};$("fab").onclick=function(){tab(2)};$("back").onclick=function(){tab(1)};
+$("print").onclick=doPrint;$("print2").onclick=doPrint;
+$("reset").onclick=function(){if(confirm("সব ডেটা (সেভ করা invoice বাদে) মুছে ফেলবে?")){try{localStorage.removeItem(KEY)}catch(e){}location.reload()}};
+["#0f6b4f","#1d4ed8","#7c3aed","#be123c","#c2410c","#0e7490","#111827"].forEach(function(c){var b=document.createElement("button");b.type="button";b.style.background=c;b.setAttribute("aria-label",c);b.onclick=function(){$("color").value=c;refresh()};$("sw").appendChild(b)});
+window.addEventListener("resize",wide);
+})();
+</script>
+</body>
+</html>
